@@ -36,13 +36,21 @@ class OSVOS(nn.Module):
             # Attention, side_prep and score_dsn start from layer 2
             if i > 0:
                 # Make the layers of the preparation step
-                side_prep.append(nn.Conv2d(lay_list[i][-1], 16, kernel_size=3, padding=1))
+                side_prep.append(
+                    nn.Conv2d(lay_list[i][-1], 16, kernel_size=3, padding=1)
+                )
 
                 # Make the layers of the score_dsn step
                 score_dsn.append(nn.Conv2d(16, 1, kernel_size=1, padding=0))
-                upscale_.append(nn.ConvTranspose2d(1, 1, kernel_size=2 ** (1 + i), stride=2**i, bias=False))
+                upscale_.append(
+                    nn.ConvTranspose2d(
+                        1, 1, kernel_size=2 ** (1 + i), stride=2**i, bias=False
+                    )
+                )
                 upscale.append(
-                    nn.ConvTranspose2d(16, 16, kernel_size=2 ** (1 + i), stride=2**i, bias=False)
+                    nn.ConvTranspose2d(
+                        16, 16, kernel_size=2 ** (1 + i), stride=2**i, bias=False
+                    )
                 )
 
         self.upscale = upscale
@@ -67,7 +75,11 @@ class OSVOS(nn.Module):
             side_temp = self.side_prep[i - 1](x)
             side.append(center_crop(self.upscale[i - 1](side_temp), crop_h, crop_w))
             side_out.append(
-                center_crop(self.upscale_[i - 1](self.score_dsn[i - 1](side_temp)), crop_h, crop_w)
+                center_crop(
+                    self.upscale_[i - 1](self.score_dsn[i - 1](side_temp)),
+                    crop_h,
+                    crop_w,
+                )
             )
 
         out = torch.cat(side[:], dim=1)

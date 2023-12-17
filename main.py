@@ -17,7 +17,9 @@ import osvos.davis_2016 as db
 import osvos.vgg_osvos as vo
 
 
-def class_balanced_cross_entropy_loss(output, label, size_average=True, batch_average=True):
+def class_balanced_cross_entropy_loss(
+    output, label, size_average=True, batch_average=True
+):
     """Define the class balanced cross entropy loss to train the network
     Args:
     output: Output of the network
@@ -40,7 +42,9 @@ def class_balanced_cross_entropy_loss(output, label, size_average=True, batch_av
     loss_pos = torch.sum(-torch.mul(labels, loss_val))
     loss_neg = torch.sum(-torch.mul(1.0 - labels, loss_val))
 
-    final_loss = num_labels_neg / num_total * loss_pos + num_labels_pos / num_total * loss_neg
+    final_loss = (
+        num_labels_neg / num_total * loss_pos + num_labels_pos / num_total * loss_neg
+    )
 
     if size_average:
         final_loss /= np.prod(label.size())
@@ -66,7 +70,9 @@ def run(img, label, test_img_list):
     print(device)
     # Network definition
     net = vo.OSVOS(pretrained=0)
-    net.load_state_dict(torch.load(parent_model_path, map_location=lambda storage, loc: storage))
+    net.load_state_dict(
+        torch.load(parent_model_path, map_location=lambda storage, loc: storage)
+    )
 
     # Logging into Tensorboard
     # log_dir = os.path.join(
@@ -82,17 +88,43 @@ def run(img, label, test_img_list):
     optimizer = optim.SGD(
         [
             {
-                "params": [pr[1] for pr in net.stages.named_parameters() if "weight" in pr[0]],
+                "params": [
+                    pr[1] for pr in net.stages.named_parameters() if "weight" in pr[0]
+                ],
                 "weight_decay": wd,
             },
-            {"params": [pr[1] for pr in net.stages.named_parameters() if "bias" in pr[0]], "lr": lr * 2},
             {
-                "params": [pr[1] for pr in net.side_prep.named_parameters() if "weight" in pr[0]],
+                "params": [
+                    pr[1] for pr in net.stages.named_parameters() if "bias" in pr[0]
+                ],
+                "lr": lr * 2,
+            },
+            {
+                "params": [
+                    pr[1]
+                    for pr in net.side_prep.named_parameters()
+                    if "weight" in pr[0]
+                ],
                 "weight_decay": wd,
             },
-            {"params": [pr[1] for pr in net.side_prep.named_parameters() if "bias" in pr[0]], "lr": lr * 2},
-            {"params": [pr[1] for pr in net.upscale.named_parameters() if "weight" in pr[0]], "lr": 0},
-            {"params": [pr[1] for pr in net.upscale_.named_parameters() if "weight" in pr[0]], "lr": 0},
+            {
+                "params": [
+                    pr[1] for pr in net.side_prep.named_parameters() if "bias" in pr[0]
+                ],
+                "lr": lr * 2,
+            },
+            {
+                "params": [
+                    pr[1] for pr in net.upscale.named_parameters() if "weight" in pr[0]
+                ],
+                "lr": 0,
+            },
+            {
+                "params": [
+                    pr[1] for pr in net.upscale_.named_parameters() if "weight" in pr[0]
+                ],
+                "lr": 0,
+            },
             {"params": net.fuse.weight, "lr": lr / 100, "weight_decay": wd},
             {"params": net.fuse.bias, "lr": 2 * lr / 100},
         ],
@@ -103,15 +135,24 @@ def run(img, label, test_img_list):
     # Preparation of the data loaders
     # Define augmentation transformations as a composition
     composed_transforms = transforms.Compose(
-        [tr.RandomHorizontalFlip(), tr.ScaleNRotate(rots=(-30, 30), scales=(0.75, 1.25)), tr.ToTensor()]
+        [
+            tr.RandomHorizontalFlip(),
+            tr.ScaleNRotate(rots=(-30, 30), scales=(0.75, 1.25)),
+            tr.ToTensor(),
+        ]
     )
     # Training dataset and its iterator
-    db_train = db.DAVIS2016(train=True, img_list=[img], labels=[label], transform=composed_transforms)
+    db_train = db.DAVIS2016(
+        train=True, img_list=[img], labels=[label], transform=composed_transforms
+    )
     trainloader = DataLoader(db_train, batch_size=1, shuffle=True, num_workers=0)
 
     # Testing dataset and its iterator
     db_test = db.DAVIS2016(
-        train=False, img_list=test_img_list, labels=[None] * len(test_img_list), transform=tr.ToTensor()
+        train=False,
+        img_list=test_img_list,
+        labels=[None] * len(test_img_list),
+        transform=tr.ToTensor(),
     )
     testloader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=0)
 
@@ -127,7 +168,6 @@ def run(img, label, test_img_list):
         running_loss_tr = 0
         np.random.seed(seed + epoch)
         for ii, sample_batched in enumerate(trainloader):
-
             inputs, gts = sample_batched["image"], sample_batched["gt"]
 
             # Forward-Backward of the mini-batch
@@ -137,7 +177,9 @@ def run(img, label, test_img_list):
             outputs = net.forward(inputs)
 
             # Compute the fuse loss
-            loss = class_balanced_cross_entropy_loss(outputs[-1], gts, size_average=False)
+            loss = class_balanced_cross_entropy_loss(
+                outputs[-1], gts, size_average=False
+            )
             running_loss_tr += loss.item()  # PyTorch 0.4.0 style
 
             # Print stuff
@@ -170,7 +212,6 @@ def run(img, label, test_img_list):
     with torch.no_grad():  # PyTorch 0.4.0 style
         # Main Testing Loop
         for ii, sample_batched in enumerate(testloader):
-
             img = sample_batched["image"]
 
             # Forward of the mini-batch
@@ -179,7 +220,9 @@ def run(img, label, test_img_list):
             outputs = net.forward(inputs)
 
             for jj in range(int(inputs.size()[0])):
-                pred = np.transpose(outputs[-1].cpu().data.numpy()[jj, :, :, :], (1, 2, 0))
+                pred = np.transpose(
+                    outputs[-1].cpu().data.numpy()[jj, :, :, :], (1, 2, 0)
+                )
                 pred = 1 / (1 + np.exp(-pred))
                 pred = np.squeeze(pred)
 

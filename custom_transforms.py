@@ -21,10 +21,11 @@ class ScaleNRotate(object):
         self.scales = scales
 
     def __call__(self, sample):
-
         if type(self.rots) == tuple:
             # Continuous range of scales and rotations
-            rot = (self.rots[1] - self.rots[0]) * random.random() - (self.rots[1] - self.rots[0]) / 2
+            rot = (self.rots[1] - self.rots[0]) * random.random() - (
+                self.rots[1] - self.rots[0]
+            ) / 2
 
             sc = (
                 (self.scales[1] - self.scales[0]) * random.random()
@@ -68,7 +69,6 @@ class Resize(object):
         self.scales = scales
 
     def __call__(self, sample):
-
         # Fixed range of scales
         sc = self.scales[random.randint(0, len(self.scales) - 1)]
 
@@ -93,7 +93,6 @@ class RandomHorizontalFlip(object):
     """Horizontally flip the given image and ground truth randomly with a probability of 0.5."""
 
     def __call__(self, sample):
-
         if random.random() < 0.5:
             for elem in sample.keys():
                 if "fname" in elem:
@@ -109,7 +108,6 @@ class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
     def __call__(self, sample):
-
         for elem in sample.keys():
             if "fname" in elem:
                 continue

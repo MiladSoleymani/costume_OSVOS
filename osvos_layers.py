@@ -13,7 +13,9 @@ def sigmoid_np(x):
     return 1 / (1 + np.exp(-x))
 
 
-def class_balanced_cross_entropy_loss(output, label, size_average=True, batch_average=True):
+def class_balanced_cross_entropy_loss(
+    output, label, size_average=True, batch_average=True
+):
     """Define the class balanced cross entropy loss to train the network
     Args:
     output: Output of the network
@@ -36,7 +38,9 @@ def class_balanced_cross_entropy_loss(output, label, size_average=True, batch_av
     loss_pos = torch.sum(-torch.mul(labels, loss_val))
     loss_neg = torch.sum(-torch.mul(1.0 - labels, loss_val))
 
-    final_loss = num_labels_neg / num_total * loss_pos + num_labels_pos / num_total * loss_neg
+    final_loss = (
+        num_labels_neg / num_total * loss_pos + num_labels_pos / num_total * loss_neg
+    )
 
     if size_average:
         final_loss /= np.prod(label.size())
@@ -52,7 +56,13 @@ def center_crop(x, height, width):
 
     # fixed indexing for PyTorch 0.4
     return F.pad(
-        x, [int(crop_w.ceil()[0]), int(crop_w.floor()[0]), int(crop_h.ceil()[0]), int(crop_h.floor()[0])]
+        x,
+        [
+            int(crop_w.ceil()[0]),
+            int(crop_w.floor()[0]),
+            int(crop_h.ceil()[0]),
+            int(crop_h.floor()[0]),
+        ],
     )
 
 
