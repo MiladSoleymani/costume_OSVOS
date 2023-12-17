@@ -18,9 +18,9 @@ from torchvision import transforms
 from tqdm import trange
 
 # Custom includes
-import costume_OSVOS.custom_transforms as tr
-import costume_OSVOS.davis_2016 as db
-import costume_OSVOS.vgg_osvos as vo
+import custom_transforms as tr
+import davis_2016 as db
+import vgg_osvos as vo
 
 import cv2
 

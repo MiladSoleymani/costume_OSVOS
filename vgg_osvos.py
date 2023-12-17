@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.modules as modules
 
-from osvos.osvos_layers import center_crop, interp_surgery
+from osvos_layers import center_crop, interp_surgery
 
 
 class OSVOS(nn.Module):
