@@ -23,6 +23,7 @@ import davis_2016 as db
 import vgg_osvos as vo
 
 import cv2
+from PIL import Image
 
 
 def class_balanced_cross_entropy_loss(
@@ -91,6 +92,8 @@ def run(img=None, label=None, test_img_list=None):
         else:
             print(f"Error: Unable to load the image {image_path}")
 
+    print(len(test_img_list))
+
     # Read the image
     img = cv2.imread("/content/f/imgs/00000.jpg")
 
@@ -106,7 +109,7 @@ def run(img=None, label=None, test_img_list=None):
     parent_model_path = "/content/parent_epoch-239.pth"
 
     nAveGrad = 1  # Average the gradient every nAveGrad iterations
-    nEpochs = 200 * nAveGrad  # Number of epochs for training
+    nEpochs = 300 * nAveGrad  # Number of epochs for training
     snapshot = nEpochs  # Store a model every snapshot epochs
     # parentEpoch = 240
 
@@ -230,7 +233,7 @@ def run(img=None, label=None, test_img_list=None):
             )
             running_loss_tr += loss.item()  # PyTorch 0.4.0 style
 
-            # Print stuff
+            # # Print stuff
             if epoch % (nEpochs // 20) == (nEpochs // 20 - 1):
                 running_loss_tr /= num_img_tr
                 print("[Epoch: %d, numImages: %5d]" % (epoch + 1, ii + 1))
@@ -251,10 +254,12 @@ def run(img=None, label=None, test_img_list=None):
         # if (epoch % snapshot) == snapshot - 1 and epoch != 0:
         #     torch.save(net.state_dict(), os.path.join(save_dir, seq_name + "_epoch-" + str(epoch) + ".pth"))
 
+    test_label_list = []
+
     stop_time = timeit.default_timer()
     print("Online training time: " + str(stop_time - start_time))
 
-    test_label_list = []
+    output_folder = "/content/results"
 
     print("Testing Network")
     with torch.no_grad():  # PyTorch 0.4.0 style
@@ -273,11 +278,47 @@ def run(img=None, label=None, test_img_list=None):
                 )
                 pred = 1 / (1 + np.exp(-pred))
                 pred = np.squeeze(pred)
+                pred = pred * 255
 
-                test_label_list.append(pred)
+                # Ensure the result is a 3D array with integer values in the range [0, 255]
+                pred = pred.astype(np.uint8)
+
+                # Create a PIL Image object from the NumPy array
+                image = Image.fromarray(pred)
+
+                # Specify the file name for the image (adjust as needed)
+                file_name = f"/image_{ii}.jpg"
+
+                # Save the image to the output folder
+                image.save(output_folder + file_name)
+
+                # # Assuming 'gpu_tensor' is your GPU tensor
+                # img = img.to('cpu')  # Move tensor to CPU
+                # img = img.numpy()
+
+                # # Convert the mask to a 3-channel image
+                # mask_colored = cv2.cvtColor(pred, cv2.COLOR_GRAY2BGR)
+
+                # # Define the color you want to apply (in BGR format)
+                # color_to_apply = [0, 255, 0]  # Green color, adjust as needed
+
+                # # Set the pixels in the mask region to the specified color
+                # result = np.where(mask_colored != 0, color_to_apply, np.reshape(img[0], (360,640,3)))
+
+                # # Specify the file name for the image (adjust as needed)
+                # file_name = f'/image_{jj}.jpg'
+
+                # # Ensure the result is a 3D array with integer values in the range [0, 255]
+                # result = result.astype(np.uint8)
+
+                # # Create a PIL Image object from the NumPy array
+                # image = Image.fromarray(result)
+
+                # # Save the image to the output folder
+                # image.save(output_folder + file_name)
 
     return test_label_list
 
 
 if __name__ == "__main__":
-    x = run()
+    image_list = run()
