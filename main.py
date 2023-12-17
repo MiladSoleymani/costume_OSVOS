@@ -65,7 +65,7 @@ def class_balanced_cross_entropy_loss(
 
 def run(img=None, label=None, test_img_list=None):
     # Get a list of all files in the folder
-    folder_path = "/content/f/imgs"
+    folder_path = "/content/imgs"
     file_list = os.listdir(folder_path)
 
     # Filter the list to include only files with certain extensions (e.g., .jpg, .png)
@@ -92,16 +92,14 @@ def run(img=None, label=None, test_img_list=None):
         else:
             print(f"Error: Unable to load the image {image_path}")
 
-    print(len(test_img_list))
-
     # Read the image
-    img = cv2.imread("/content/f/imgs/00000.jpg")
+    img = cv2.imread("/content/imgs/00000.jpg")
 
     # Convert BGR to RGB
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     # Read the image
-    label = cv2.imread("/content/f/mask/00000.jpg")
+    label = cv2.imread("/content/mask/00000.jpg")
 
     # Convert BGR to RGB
     label = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
