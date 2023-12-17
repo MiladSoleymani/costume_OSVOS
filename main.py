@@ -1,5 +1,11 @@
 from __future__ import division
 
+import sys
+
+sys.path.append("/content/costume_OSVOS")
+
+import os
+
 import timeit
 
 import numpy as np
@@ -12,9 +18,11 @@ from torchvision import transforms
 from tqdm import trange
 
 # Custom includes
-import osvos.custom_transforms as tr
-import osvos.davis_2016 as db
-import osvos.vgg_osvos as vo
+import costume_OSVOS.custom_transforms as tr
+import costume_OSVOS.davis_2016 as db
+import costume_OSVOS.vgg_osvos as vo
+
+import cv2
 
 
 def class_balanced_cross_entropy_loss(
@@ -54,8 +62,48 @@ def class_balanced_cross_entropy_loss(
     return final_loss
 
 
-def run(img, label, test_img_list):
-    parent_model_path = "C:\\Uni\\Proj\\vidsegtool\\osvos\\models\\parent_epoch-239.pth"
+def run(img=None, label=None, test_img_list=None):
+    # Get a list of all files in the folder
+    folder_path = "/content/f/imgs"
+    file_list = os.listdir(folder_path)
+
+    # Filter the list to include only files with certain extensions (e.g., .jpg, .png)
+    image_files = [
+        f for f in file_list if f.lower().endswith((".jpg", ".jpeg", ".png", ".gif"))
+    ]
+
+    test_img_list = []
+    # Loop through the image files and read each one
+    for image_file in image_files:
+        # Construct the full path to the image file
+        image_path = os.path.join(folder_path, image_file)
+
+        # Read the image using OpenCV
+        img = cv2.imread(image_path)
+
+        # Convert BGR to RGB
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # Check if the image was successfully loaded
+        if img is not None:
+            # Display or process the image as needed
+            test_img_list.append(img)
+        else:
+            print(f"Error: Unable to load the image {image_path}")
+
+    # Read the image
+    img = cv2.imread("/content/f/imgs/00000.jpg")
+
+    # Convert BGR to RGB
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # Read the image
+    label = cv2.imread("/content/f/mask/00000.jpg")
+
+    # Convert BGR to RGB
+    label = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    parent_model_path = "/content/parent_epoch-239.pth"
 
     nAveGrad = 1  # Average the gradient every nAveGrad iterations
     nEpochs = 200 * nAveGrad  # Number of epochs for training
@@ -229,3 +277,7 @@ def run(img, label, test_img_list):
                 test_label_list.append(pred)
 
     return test_label_list
+
+
+if __name__ == "__main__":
+    x = run()
