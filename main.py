@@ -95,19 +95,19 @@ def run(img=None, label=None, test_img_list=None):
     # Read the image
     img = cv2.imread("/content/imgs/00000.jpg")
 
-    # Convert BGR to RGB
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # # Convert BGR to RGB
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     # Read the image
-    label = cv2.imread("/content/mask/00000.jpg")
+    label = cv2.imread("/content/mask/00000.png")
 
-    # Convert BGR to RGB
-    label = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # # Convert BGR to RGB
+    # label = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     parent_model_path = "/content/parent_epoch-239.pth"
 
     nAveGrad = 1  # Average the gradient every nAveGrad iterations
-    nEpochs = 300 * nAveGrad  # Number of epochs for training
+    nEpochs = 3000 * nAveGrad  # Number of epochs for training
     snapshot = nEpochs  # Store a model every snapshot epochs
     # parentEpoch = 240
 
