@@ -65,6 +65,52 @@ def class_balanced_cross_entropy_loss(
 
 def run(img=None, label=None, test_img_list=None):
     # Get a list of all files in the folder
+    img_folder_path = "/content/tr_imgs"
+    file_list = os.listdir(img_folder_path)
+
+    # Filter the list to include only files with certain extensions (e.g., .jpg, .png)
+    image_img_files = [
+        f for f in file_list if f.lower().endswith((".jpg", ".jpeg", ".png", ".gif"))
+    ]
+
+    # Get a list of all files in the folder
+    mask_folder_path = "/content/tr_mask"
+    file_list = os.listdir(mask_folder_path)
+
+    # Filter the list to include only files with certain extensions (e.g., .jpg, .png)
+    image_mask_files = [
+        f for f in file_list if f.lower().endswith((".jpg", ".jpeg", ".png", ".gif"))
+    ]
+
+    train_img_list = []
+    train_label_list = []
+    # Loop through the image files and read each one
+    for image_file, mask_file in zip(image_img_files, image_mask_files):
+        # Construct the full path to the image file
+        image_path = os.path.join(img_folder_path, image_file)
+
+        # Read the image using OpenCV
+        img = cv2.imread(image_path)
+
+        # Construct the full path to the image file
+        mask_path = os.path.join(mask_folder_path, mask_file)
+
+        # Read the image using OpenCV
+        mask = cv2.imread(mask_path)
+
+        # # Convert BGR to RGB
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # Check if the image was successfully loaded
+        if img is not None and mask is not None:
+            # Display or process the image as needed
+            train_img_list.append(img)
+            # Display or process the image as needed
+            train_label_list.append(mask)
+        else:
+            print(f"Error: Unable to load the image {image_path}")
+
+    # Get a list of all files in the folder
     folder_path = "/content/imgs"
     file_list = os.listdir(folder_path)
 
@@ -82,8 +128,8 @@ def run(img=None, label=None, test_img_list=None):
         # Read the image using OpenCV
         img = cv2.imread(image_path)
 
-        # Convert BGR to RGB
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # # Convert BGR to RGB
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Check if the image was successfully loaded
         if img is not None:
@@ -93,13 +139,13 @@ def run(img=None, label=None, test_img_list=None):
             print(f"Error: Unable to load the image {image_path}")
 
     # Read the image
-    img = cv2.imread("/content/imgs/00000.jpg")
+    # img = cv2.imread("/content/imgs/00000.jpg")
 
     # # Convert BGR to RGB
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     # Read the image
-    label = cv2.imread("/content/mask/00000.png")
+    # label = cv2.imread("/content/mask/00000.png")
 
     # # Convert BGR to RGB
     # label = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -107,7 +153,7 @@ def run(img=None, label=None, test_img_list=None):
     parent_model_path = "/content/parent_epoch-239.pth"
 
     nAveGrad = 1  # Average the gradient every nAveGrad iterations
-    nEpochs = 3000 * nAveGrad  # Number of epochs for training
+    nEpochs = 1000 * nAveGrad  # Number of epochs for training
     snapshot = nEpochs  # Store a model every snapshot epochs
     # parentEpoch = 240
 
@@ -190,9 +236,19 @@ def run(img=None, label=None, test_img_list=None):
             tr.ToTensor(),
         ]
     )
+
+    # train_img_list = []
+    # train_label_list = []
     # Training dataset and its iterator
+    # db_train = db.DAVIS2016(
+    #     train=True, img_list=[img], labels=[label], transform=composed_transforms
+    # )
+    # trainloader = DataLoader(db_train, batch_size=1, shuffle=True, num_workers=0)
     db_train = db.DAVIS2016(
-        train=True, img_list=[img], labels=[label], transform=composed_transforms
+        train=True,
+        img_list=train_img_list,
+        labels=train_label_list,
+        transform=composed_transforms,
     )
     trainloader = DataLoader(db_train, batch_size=1, shuffle=True, num_workers=0)
 
